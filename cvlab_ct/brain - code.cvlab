@@ -1,0 +1,129 @@
+{
+  "_filetype": "CV-Lab diagram save file. See: https://github.com/cvlab-ai/cvlab ",
+  "_type": "diagram",
+  "_version": "1.2.1",
+  "elements": {
+    "2": {
+      "_type": "element",
+      "class": "ImagePreview3D",
+      "gui_options": {
+        "position": [
+          24630,
+          24660
+        ],
+        "preview_size": 277.0,
+        "show_parameters": true,
+        "show_preview": true,
+        "show_sliders": false
+      },
+      "module": "cvlab.diagram.elements.presentation",
+      "parameters": {
+        "axis": {
+          "name": "Z",
+          "value": 0
+        },
+        "slice": 0.6505,
+        "type": {
+          "name": "No change",
+          "value": 0
+        }
+      },
+      "unique_id": "329485"
+    },
+    "5": {
+      "_type": "element",
+      "class": "CodeElement",
+      "gui_options": {
+        "position": [
+          24930,
+          24660
+        ],
+        "preview_size": 351.0,
+        "show_parameters": true,
+        "show_preview": true,
+        "show_sliders": null
+      },
+      "module": "cvlab.diagram.elements.code",
+      "parameters": {
+        "code": "import cv2 as cv\nimport numpy as np\n\nMIN = 50\nMAX = 150\n\nimage = image + 0\nimage[image < MIN] = 0\nimage[image > MAX] = 0\n\nreturn image",
+        "split_channels": {
+          "name": "Image",
+          "value": false
+        }
+      },
+      "unique_id": "309816"
+    },
+    "8": {
+      "_type": "element",
+      "class": "ImageLoader3D",
+      "gui_options": {
+        "position": [
+          24430,
+          24660
+        ],
+        "preview_size": 60,
+        "show_parameters": true,
+        "show_preview": false,
+        "show_sliders": null
+      },
+      "module": "cvlab.diagram.elements.image_io",
+      "parameters": {
+        "paths": [
+          "images/brain-3D/000000.png",
+          "images/brain-3D/005000.png",
+          "images/brain-3D/010000.png",
+          "images/brain-3D/015000.png",
+          "images/brain-3D/020000.png",
+          "images/brain-3D/025000.png",
+          "images/brain-3D/030000.png",
+          "images/brain-3D/035000.png",
+          "images/brain-3D/040000.png",
+          "images/brain-3D/045000.png",
+          "images/brain-3D/050000.png",
+          "images/brain-3D/055000.png",
+          "images/brain-3D/060000.png",
+          "images/brain-3D/065000.png",
+          "images/brain-3D/070000.png",
+          "images/brain-3D/075000.png",
+          "images/brain-3D/080000.png",
+          "images/brain-3D/085000.png",
+          "images/brain-3D/090000.png",
+          "images/brain-3D/095000.png",
+          "images/brain-3D/100000.png",
+          "images/brain-3D/105000.png",
+          "images/brain-3D/110000.png",
+          "images/brain-3D/115000.png",
+          "images/brain-3D/120000.png",
+          "images/brain-3D/125000.png",
+          "images/brain-3D/130000.png",
+          "images/brain-3D/135000.png",
+          "images/brain-3D/140000.png",
+          "images/brain-3D/145000.png",
+          "images/brain-3D/150000.png",
+          "images/brain-3D/155000.png",
+          "images/brain-3D/160000.png",
+          "images/brain-3D/165000.png",
+          "images/brain-3D/170000.png",
+          "images/brain-3D/175000.png"
+        ]
+      },
+      "unique_id": "226953"
+    }
+  },
+  "params": [],
+  "wires": {
+    "0": {
+      "from_element": 8,
+      "from_output": "output",
+      "to_element": 2,
+      "to_input": "input"
+    },
+    "1": {
+      "from_element": 2,
+      "from_output": "output",
+      "to_element": 5,
+      "to_input": "input"
+    }
+  },
+  "zoom_level": 1.0
+}
