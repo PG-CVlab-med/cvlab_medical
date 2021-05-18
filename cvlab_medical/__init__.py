@@ -2,7 +2,7 @@ from glob import glob
 
 from cvlab_samples import OpenExampleAction, get_menu
 from cvlab.diagram.elements import add_plugin_callback
-
+from .dicom import*
 
 def add_samples_callback(main_window, menu_title, samples_directory):
     samples = glob(samples_directory + "/*.cvlab")
