@@ -11,6 +11,7 @@ from ..diagram.interface import *
 from .mimedata import *
 from . import image_preview
 from . import config
+from .parameters import *
 
 ALLOW_UPSIZE = True
 
@@ -134,6 +135,7 @@ Double click - open image preview in separate window or expand/collapse text pre
 
     def __init__(self, element, outputs):
         super(PreviewsContainer, self).__init__()
+        self.param_3d_image = {}
         self.element = element
         self.outputs = outputs
         layout = QVBoxLayout()
@@ -148,6 +150,26 @@ Double click - open image preview in separate window or expand/collapse text pre
         self.element.state_changed.connect(self.update)
         self.image_dialogs_count = 0
         self.setToolTip(self.help)
+
+    def create_3d_image_controls(self, layout):
+        if self.element.is_3d_image:
+            self.param_3d_image["axis"] = ComboboxParameter("axis", [("Z", 0), ("Y", 1), ("X", 2)])
+            self.param_3d_image["slicer"] = FloatParameter("slice", min_=0, max_=1, step=0.01)
+            self.param_3d_image["fast_edit"] = ComboboxParameter("type", [
+                ("No change", 0),
+                ("Truncate to 0-255", 10),
+                ("Truncate to 0-1", 20),
+                ("Scale contrast to 0-1", 21),
+                ("Mean -> 0.5 max/min -> 1/0", 22),
+                ("Divide by 255.0", 23),
+                ("0 -> 0.5, max/min -> 1/0", 30),
+               ])
+            for key, param in self.param_3d_image.items():
+                param.value_changed.connect(self.update)
+
+            layout.addLayout(GuiComboboxParameter(self.param_3d_image["fast_edit"], self.element))
+            layout.addLayout(GuiComboboxParameter(self.param_3d_image["axis"], self.element))
+            layout.addLayout(GuiFloatParameter(self.param_3d_image["slicer"], self.element))
 
     def wheelEvent(self, event):
         assert isinstance(event, QWheelEvent)
@@ -175,6 +197,9 @@ Double click - open image preview in separate window or expand/collapse text pre
         for output in self.outputs:
             if not output.preview_enabled:
                 continue
+
+            self.create_3d_image_controls(layout)
+
             preview = OutputPreview(output, self)
             self.previews.append(preview)
             layout.addLayout(preview)
@@ -238,6 +263,8 @@ class ActionImage(QLabel):
         self.text_preview_expanded = False
 
     def set_image(self, arr):
+        arr = self.set_3d_image_params(arr[:])
+
         # remember not to modify arr !!!
         if self.data_type != ActionImage.DATA_TYPE_IMAGE:
             self.prepare_actions()
@@ -312,7 +339,7 @@ class ActionImage(QLabel):
             self.element.diagram.element_deleted.connect(self.on_element_destroy)
             self.__connected = True
         if self.image_dialog is None:
-            image = self.image_preview.get_preview_objects()[self.id]
+            image = self.set_3d_image_params(self.image_preview.get_preview_objects()[self.id])
             self.image_dialog = image_preview.manager.manager.window(self.name, image=image, position='cursor')
             self.image_dialog.setImage(image)
             settings = config.ConfigWrapper.get_settings()
@@ -357,6 +384,68 @@ class ActionImage(QLabel):
         QObject.deleteLater(self)
         if self.image_dialog is not None:
             self.close_image_dialog()
+
+    def set_3d_image_params(self, arr):
+        if self.element.is_3d_image and len(self.previews_container.param_3d_image):
+            param_3d_image = self.previews_container.param_3d_image
+            axis = param_3d_image["axis"].value
+            slice_value = param_3d_image["slicer"].value
+            slice = int(round(slice_value * (arr.shape[axis] - 1)))
+            if axis == 0:
+                slice = arr[slice, ...]
+            elif axis == 1:
+                slice = arr[:, slice, ...]
+            elif axis == 2:
+                slice = arr[:, :, slice, ...]
+            else:
+                raise Exception("Unknown 'axis' parameter")
+
+            type = param_3d_image["fast_edit"].value
+            slice = self.fast_edit_3d_image_params(type, slice)
+
+            return slice
+        return arr
+
+    def fast_edit_3d_image_params(self, type, arr):
+        i = arr[:]
+        output = None
+        if type == 0:
+            output = i
+        elif type == 10:
+            output = i.clip(0, 255).astype(np.uint8)
+        elif type == 20:
+            output = i.astype(np.float32).clip(0.0, 1.0)
+        elif type == 21:
+            output = i.astype(np.float32)
+            min_, max_, _, _ = cv.minMaxLoc(output.flatten())
+            if min_ == max_:
+                output = np.zeros(output.shape) + 0.5
+            else:
+                output = (output - min_) / (max_ - min_) + min_
+        elif type == 22:
+            output = i.astype(np.float32)
+            min_, max_, _, _ = cv.minMaxLoc(output.flatten())
+            if min_ == max_:
+                output = np.zeros(output.shape) + 0.5
+            else:
+                if len(output.shape) > 2:
+                    mean = cv.mean(cv.mean(output)[:3])[0]
+                else:
+                    mean = cv.mean(output)[0]
+                scale = 0.5 / max(max_ - mean, mean - min_)
+                output = (output - mean) * scale + 0.5
+        elif type == 23:
+            output = i / 255.
+        elif type == 30:
+            output = i.astype(np.float32)
+            min_, max_, _, _ = cv.minMaxLoc(output.flatten())
+            if min_ == max_:
+                output = np.zeros(output.shape) + 0.5
+            else:
+                scale = 0.5 / max(max_, -min_)
+                output = output * scale + 0.5
+
+        return output
 
 
 class OutputPreview(QHBoxLayout):

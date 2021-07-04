@@ -29,11 +29,16 @@ class NormalElement(FunctionGuiElement, ThreadedElement):
 
 
 class InputElement(InputGuiElement, ThreadedElement):
-    def get_source(self):
+    def get_source(self, is_3d_image=False):
         name = self.__class__.__name__.lower()
         code = None
         outputs = list(self.outputs.keys())
         return name, code, outputs
+
+
+class InputElement3D(InputElement):
+    def __init__(self):
+        super().__init__(True)
 
 
 class SequenceToDataElement(NormalElement):
@@ -43,7 +48,6 @@ class SequenceToDataElement(NormalElement):
         outputs = {name: Data() for name in self.outputs}
         units = [ProcessingUnit(self, inputs, parameters, outputs)]
         return units, outputs
-
 
 
 class MultiInputOneOutputElement(NormalElement):
@@ -61,6 +65,7 @@ class MultiInputOneOutputElement(NormalElement):
 
 class SequenceToSequenceElement(NormalElement):
     num_outputs = 8
+
     def get_attributes(self):
         return [Input("inputs", multiple=True)], [Output("output")], []
 

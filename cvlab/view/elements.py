@@ -22,8 +22,9 @@ Right click - menu
 Double click - toggle previews 
 Drag & drop - move element around"""
 
-    def __init__(self):
-        super(GuiElement, self).__init__()
+    def __init__(self, is_3d_image=False):
+        super().__init__()
+        self.is_3d_image = is_3d_image
         self.setObjectName("Element")
         self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.status_bar = ElementStatusBar(self)
@@ -511,8 +512,8 @@ class OperatorGuiElement(GuiElement):
 
 
 class InputGuiElement(GuiElement):
-    def __init__(self):
-        super(InputGuiElement, self).__init__()
+    def __init__(self, is_3d_image=False):
+        super(InputGuiElement, self).__init__(is_3d_image)
         vb_main = QVBoxLayout()
         hb = QHBoxLayout()
         vb_params = QVBoxLayout()
@@ -536,10 +537,11 @@ class InputGuiElement(GuiElement):
         vb_main.base_spacing = 0
         self.create_preview(vb_main)
         self.setLayout(vb_main)
-
         self.create_switch_preview_action()
         self.create_menu_separator()
         self.create_duplicate_action()
         self.create_break_action()
         self.create_del_action()
+
+
 

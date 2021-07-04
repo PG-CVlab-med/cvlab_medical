@@ -38,7 +38,7 @@ class ImageSequenceLoader(InputElement):
                 data.value = image
 
 
-class ImageLoader3D(InputElement):
+class ImageLoader3D(InputElement3D):
     name = "Image loader 3D"
     comment = "Loads multiple images as 3D image"
 
