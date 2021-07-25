@@ -1,6 +1,6 @@
+from cvlab.diagram.elements.base import *
 import nibabel as nib
 import pydicom
-from cvlab.diagram.elements.presentation import *
 
 
 class DicomLoader3D(InputElement):
@@ -54,7 +54,8 @@ class NiftiLoader3D(InputElement):
     comment = 'Loads 3D nifti format image \n'
 
     def get_attributes(self):
-        return [], [Output("output")], [PathParameter("path")]
+        attributes = [], [Output("output")], [PathParameter("path")]
+        return attributes
 
     def process_inputs(self, inputs, outputs, parameters):
         path = parameters["path"]
