@@ -3,7 +3,7 @@ import nibabel as nib
 import pydicom
 
 
-class DicomLoader3D(InputElement3D):
+class DicomLoader3D(InputElement):
     name = 'DicomLoader3D'
     comment = 'Loads DICOM format images as 3D image\n' \
               'Finds all DICOM images from directory'
@@ -49,7 +49,7 @@ class DicomLoader2D(InputElement):
             outputs["output"] = Data(d)
 
 
-class NiftiLoader3D(InputElement3D):
+class NiftiLoader3D(InputElement):
     name = 'NiftiLoader3D'
     comment = 'Loads 3D nifti format image \n'
 
