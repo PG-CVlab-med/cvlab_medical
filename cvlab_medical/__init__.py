@@ -2,18 +2,17 @@ from glob import glob
 
 from cvlab_samples import OpenExampleAction, get_menu
 from cvlab.diagram.elements import add_plugin_callback
+from cvlab.view.widgets import OutputPreview
+
 from .med_image_loaders import*
-from cvlab.view.widgets import PreviewsContainer, OutputPreview
-from .test import*
+from .preview_edit import*
 
-setattr(ActionImage, "teste", teste)
+
+setattr(ActionImage, "preview_options", preview_options)
 setattr(ActionImage, "DataFlag", 0)
+setattr(ActionImage, "ConstPreview", 0)
 
-setattr(ActionImage, "ConstPreview",0)
-
-OutputPreview.preview_callbacks.append((np.ndarray, set_image_test))
-
-
+OutputPreview.preview_callbacks.append((np.ndarray, set_image_preview))
 
 
 def add_samples_callback(main_window, menu_title, samples_directory):
