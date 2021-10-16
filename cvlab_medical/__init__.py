@@ -2,10 +2,11 @@ from glob import glob
 
 from cvlab_samples import OpenExampleAction, get_menu
 from cvlab.diagram.elements import add_plugin_callback
-from .med_image_io import*
+from .med_image_io import *
 from .med_visualisation import *
 
 from cvlab_medical.med_visualisation_util import *
+
 
 def add_samples_callback(main_window, menu_title, samples_directory):
     samples = glob(samples_directory + "/*.cvlab")
