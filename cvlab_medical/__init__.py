@@ -5,7 +5,7 @@ from cvlab.diagram.elements import add_plugin_callback
 from .med_image_io import *
 from .med_visualisation import *
 
-from cvlab_medical.med_visualisation_util import *
+from cvlab_medical.med_visualisation_utils.med_visualisation_util import *
 
 
 def add_samples_callback(main_window, menu_title, samples_directory):
