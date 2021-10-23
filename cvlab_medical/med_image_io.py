@@ -1,10 +1,12 @@
 from cvlab.diagram.elements.base import *
 import nibabel as nib
 import pydicom
+import SimpleITK as sitk
+from cvlab.diagram.elements.presentation import *
 
 
-class DicomLoader3D(InputElement):
-    name = 'DicomLoader3D'
+class DicomLoaderDirectory(InputElement):
+    name = 'Dicom loader (directory)'
     comment = 'Loads DICOM format images as 3D image\n' \
               'Finds all DICOM images from directory'
 
@@ -32,8 +34,8 @@ class DicomLoader3D(InputElement):
         outputs["output"] = Data(d)
 
 
-class DicomLoader2D(InputElement):
-    name = 'DicomLoader2D'
+class DicomLoader(InputElement):
+    name = 'Dicom loader'
     comment = 'Loads single DICOM format image\n'
 
     def get_attributes(self):
@@ -49,9 +51,24 @@ class DicomLoader2D(InputElement):
             outputs["output"] = Data(d)
 
 
+class DicomSaver(NormalElement):
+    name = "Dicom saver"
+    comment = "Saves dicom format image"
+
+    def get_attributes(self):
+        return [Input("input")], [], [SavePathParameter("path", value="", extension_filter="IMG (*.dcm)")]
+
+    def process_inputs(self, inputs, outputs, parameters):
+        path = parameters["path"]
+        img_value = inputs["input"].value
+        if img_value is not None and path != "":
+            img = sitk.GetImageFromArray(img_value)
+            sitk.WriteImage(img, path)
+
+
 class NiftiLoader3D(InputElement):
-    name = 'NiftiLoader3D'
-    comment = 'Loads 3D nifti format image \n'
+    name = 'Nifti loader 3D'
+    comment = 'Loads 3D nifti format image\n'
 
     def get_attributes(self):
         attributes = [], [Output("output")], [PathParameter("path")]
@@ -65,6 +82,21 @@ class NiftiLoader3D(InputElement):
         if d is not None:
             self.may_interrupt()
             outputs["output"] = Data(d)
+
+
+class NiftiSaver(NormalElement):
+    name = "Nifti saver"
+    comment = "Saves 3D nifti format image\n"
+
+    def get_attributes(self):
+        return [Input("input")], [], [SavePathParameter("path", value="", extension_filter="IMG (*.nii)")]
+
+    def process_inputs(self, inputs, outputs, parameters):
+        path = parameters["path"]
+        img_value = inputs["input"].value
+        if img_value is not None and path != "":
+            img = nib.Nifti1Image(img_value, affine=np.eye(4))
+            nib.save(img, path)
 
 
 register_elements_auto(__name__, locals(), "Medical Image IO")
