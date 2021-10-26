@@ -33,11 +33,11 @@ if sys.version_info.major <= 2:
 
 
 requirements = [
-    "cvlab>=1.2",
+    "cvlab>=1.3.1",
 ]
 
 
-__version__ = "0.1"
+__version__ = "1"
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:

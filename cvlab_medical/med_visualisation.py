@@ -2,16 +2,18 @@ import vedo.applications
 import vtk
 from vtkmodules.util import numpy_support
 
-from cvlab_medical.med_visualisation_utils.med_visualisation_util import *
+from cvlab_medical.med_visualisation_utils.med_visualisation_classes import *
+from cvlab_medical.med_visualisation_utils.med_visualisation_elements import VisualisationElementVtk
 from cvlab_medical.med_visualisation_utils.vedo_app_utils import IsosurfaceBrowserCustom, SlicerPlotterCustom
 
 
 class RayCastVTKPureVisualisation(VisualisationElementVtk):
     name = 'Ray Cast (pure VTK)'
-    comment = 'test\n'
+    comment = 'Visualisation of 3D image using ray cast (pure VTK).\n'
 
     def __init__(self):
         super().__init__()
+        vtk.vtkVolume.__init__(self)
 
     def get_attributes(self):
         return [Input("input")], [Output("output")], [ButtonParameter("Visualization", self.visualization)]
@@ -60,7 +62,7 @@ class RayCastVTKPureVisualisation(VisualisationElementVtk):
 
 
 class PlotterVedo(VisualisationElementVtk):
-    name = 'PlotterVedo'
+    name = 'Plotter Vedo'
     comment = 'Visualisation of 3D image using vedo plotter.\n'
 
     def __init__(self):
@@ -87,7 +89,7 @@ class PlotterVedo(VisualisationElementVtk):
 
 
 class SlicePlotterVedo(VisualisationElementVtk):
-    name = 'SlicePlotterVedo'
+    name = 'Slice Plotter Vedo'
     comment = 'Slice visualisation of 3D image using vedo slice plotter.\n'
 
     def __init__(self):
@@ -101,12 +103,11 @@ class SlicePlotterVedo(VisualisationElementVtk):
         outputs["output"] = Data(data)
 
     def get_plotter(self, vol, qt_widget):
-        return SlicerPlotterCustom( vol,
-                     bg='white', bg2='lightblue',
-                     cmaps=("gist_ncar_r","jet","Spectral_r","hot_r","bone_r"),
-                     useSlider3D=False,
-                     qtWidget=qt_widget
-                   )
+        return SlicerPlotterCustom(vol,
+                                   bg='white', bg2='lightblue',
+                                   cmaps=["gist_ncar_r", "jet", "Spectral_r", "hot_r", "bone_r"],
+                                   useSlider3D=False,
+                                   qtWidget=qt_widget)
 
     def get_volume(self, image):
         vol = vedo.Volume(image, c=['white', 'b', 'g', 'r'])
@@ -115,9 +116,10 @@ class SlicePlotterVedo(VisualisationElementVtk):
     def show_plotter(self, vp, vol):
         vp.show()
 
+
 class IsosurfaceBrowserVedo(VisualisationElementVtk):
-    name = 'IsosurfaceBrowser'
-    comment = 'tmp\n'
+    name = 'Isosurface Browser Vedo'
+    comment = 'Isosurface visualisation of 3D image using vedo isosurface browser.\n'
 
     def __init__(self):
         super().__init__()
@@ -141,4 +143,3 @@ class IsosurfaceBrowserVedo(VisualisationElementVtk):
 
 
 register_elements_auto(__name__, locals(), "Medical Image Visualisation")
-

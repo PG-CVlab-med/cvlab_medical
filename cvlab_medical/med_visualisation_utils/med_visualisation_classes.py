@@ -1,54 +1,30 @@
-import vedo
-import vtkmodules
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import *
 from distutils.util import strtobool
 
+import vedo
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 from cvlab.view import image_preview, config
+from cvlab.view.image_preview import *
 from cvlab.view.widgets import ActionImage, OutputPreview
 from cvlab_medical.med_image_io import *
-from cvlab.view.image_preview import *
-
-
-def is_image_3d(arr):
-    if arr is not None and len(arr.shape) == 3 and arr.shape[2] != 3:
-        return True
-    return False
+from cvlab_medical.med_visualisation_utils.med_internal_utils import is_image_3d
 
 
 class PreviewWindowVtk(PreviewWindow):
-    raise_window = True
-
     def __init__(self, manager, name, image=None, message=None, position=None, size=None, high_quality=False):
-        super(PreviewWindowVtk, self).__init__(manager, name, image=None, message=None, position=None, size=None, high_quality=False)
+        super().__init__(manager, name, image=None, message=None, position=None, size=None, high_quality=False)
 
         self.vtkWidget = None
         self.vol = None
         self.vp = None
 
-        self.setVisualisation(image, show=False)
-
-    def closeVtkWidget(self):
-        self.vol = None
-        if self.vp is not None:
-            if isinstance(self.vp, vedo.plotter.Plotter):
-                self.vp.close()
-            self.vp = None
-        if self.vtkWidget is not None:
-            self.layout().removeWidget(self.vtkWidget)
-            self.vtkWidget.Finalize()
-            del self.vtkWidget
-            self.vtkWidget = None
-
-    def setVisualisation(self, image, show=True, scale=None, blink=False, element=None):
+    def setVisualisation(self, image, show=True, blink=False, element=None):
         if image is None:
             return
 
         if self.vtkWidget is None:
             self.vtkWidget = QVTKRenderWindowInteractor(self)
-            self.vtkWidget.resize(512, 512)
+            self.vtkWidget.resize(*self.autoSize())
             self.layout().addWidget(self.vtkWidget, 0, 0)
 
         if element is not None:
@@ -61,25 +37,83 @@ class PreviewWindowVtk(PreviewWindow):
             self.show()
             if element is not None:
                 element.show_plotter(self.vp, self.vol)
-            if self.raise_window:
-                self.raise_()
+
+    def isVedoPoltter(self):
+        return isinstance(self.vp, vedo.plotter.Plotter)
+
+    def resetCamera(self):
+        if self.isVedoPoltter():
+            self.vp.resetCamera()
+
+    def wheelEvent(self, event):
+        # this method should not be implemented for visualisation window
+        # it adjust window in incorrect way
+        pass
+
+    def contextMenuEvent(self, event):
+        assert isinstance(event, QContextMenuEvent)
+
+        # implement context menu only for vedo
+        if self.isVedoPoltter():
+            self.blink(False)
+
+            menu = QMenu()
+            reset_camera = menu.addAction("Reset camera")
+            screenshot = menu.addAction("Make screenshot")
+            quit = menu.addAction("Close")
+
+            action = menu.exec_(self.mapToGlobal(event.pos()))
+
+            if action == quit:
+                self.close()
+            elif action == reset_camera:
+                self.resetCamera()
+            elif action == screenshot:
+                filename, filter = QFileDialog.getSaveFileName(self, "Save screenshot",
+                                                               filter="*.png;;*.jpg;;*.bmp;;*.tiff;;*.gif",
+                                                               directory=self.last_save_dir)
+                if filename:
+                    try:
+                        if not str(filename).endswith(filter[1:]):
+                            filename = filename + filter[1:]
+                        PreviewWindowVtk.last_save_dir = path.dirname(str(filename))
+                        self.vp.screenshot(filename)
+                    except Exception as e:
+                        QMessageBox.critical(self, "Saving error", "Cannot save.\nError: {}".format(e.message))
+                        print("Saving error:", e)
 
     def closeEvent(self, event):
         super().closeEvent(event)
         self.closeVtkWidget()
 
+    def closeVtkWidget(self):
+        del self.vol
+        self.vol = None
+
+        if self.vp is not None:
+            if self.isVedoPoltter():
+                self.vp.close()
+            del self.vp
+            self.vp = None
+
+        if self.vtkWidget is not None:
+            self.layout().removeWidget(self.vtkWidget)
+            self.vtkWidget.Finalize()
+            del self.vtkWidget
+            self.vtkWidget = None
+
     def close(self):
-        super().close()
         self.closeVtkWidget()
+        super().close()
 
 
 class ActionImageVtk(ActionImage):
     def __init__(self, image_preview):
         self.visualisation_dialog = None
         self.visualisation_option_added = False
-        super(ActionImageVtk, self).__init__(image_preview)
+        super().__init__(image_preview)
         self.name = "{} {}, Visualisation {}".format(self.element.name, str(self.element.object_id),
-                                                        image_preview.output.name)
+                                                     image_preview.output.name)
 
     def visualisation_option(self, arr):
         if not self.visualisation_option_added and is_image_3d(arr):
@@ -98,7 +132,8 @@ class ActionImageVtk(ActionImage):
         if self.visualisation_dialog is None:
             image = self.image_preview.get_preview_objects()[self.id]
             if image is not None:
-                self.visualisation_dialog = image_preview.manager.manager.window_vtk(self.name, image=image, position='cursor')
+                self.visualisation_dialog = image_preview.manager.manager.window_vtk(self.name, image=image,
+                                                                                     position='cursor')
                 self.visualisation_dialog.setImage(self.set_3d_image_params(image))
                 self.visualisation_dialog.setVisualisation(image, element=self.element)
                 settings = config.ConfigWrapper.get_settings()
@@ -122,7 +157,6 @@ class ActionImageVtk(ActionImage):
 
     def set_image(self, arr):
         self.visualisation_option(arr)
-
         super().set_image(arr)
 
     def eventFilter(self, source, event):
@@ -157,11 +191,11 @@ class OutputPreviewVtk(OutputPreview):
     ]
 
     def __init__(self, output, previews_container):
-        super(OutputPreviewVtk, self).__init__(output, previews_container)
+        super().__init__(output, previews_container)
 
+        # clean up and initialization
         while len(self.previews) != 0:
             self.delete_old_init()
-
         self.previews = []
         self.previews.append(ActionImageVtk(self))
         self.previews[0].setPixmap(self.img)
@@ -183,9 +217,6 @@ class OutputPreviewVtk(OutputPreview):
             self.prepare_3d_image_controls(index)
 
         super().adjust_number_of_previews(preview_images)
-        # or:
-        # while len(preview_images) < len(self.previews):
-        #     self.delete_old_init()
 
     def update(self, forced=False):
         objects = self.get_preview_objects()
@@ -211,7 +242,7 @@ class OutputPreviewVtk(OutputPreview):
 
 class PreviewsContainerVtk(PreviewsContainer):
     def __init__(self, element, outputs):
-        super(PreviewsContainerVtk, self).__init__(element, outputs)
+        super().__init__(element, outputs)
 
         self.visualisation_dialog_count = 0
 
@@ -226,7 +257,7 @@ class PreviewsContainerVtk(PreviewsContainer):
 
 class GuiElementVtk(GuiElement):
     def __init__(self):
-        super(GuiElementVtk, self).__init__()
+        super().__init__()
 
     def create_preview(self, layout):
         self.preview = PreviewsContainerVtk(self, list(self.outputs.values()))
@@ -235,9 +266,7 @@ class GuiElementVtk(GuiElement):
 
 class FunctionGuiElementVtk(GuiElementVtk):
     def __init__(self):
-        super(FunctionGuiElementVtk, self).__init__()
-
-        print("FunctionGuiElementVtk")
+        super().__init__()
 
         vb_main = QVBoxLayout()
         hb_content = QHBoxLayout()
@@ -248,12 +277,12 @@ class FunctionGuiElementVtk(GuiElementVtk):
         vb_inputs.setAlignment(QtCore.Qt.AlignTop)
         vb_outputs.setAlignment(QtCore.Qt.AlignTop)
 
-        hb_label.setContentsMargins(0,0,0,0)
+        hb_label.setContentsMargins(0, 0, 0, 0)
         hb_label.setSpacing(0)
 
         w_params = QWidget()
         w_params.setLayout(vb_params)
-        vb_params.setContentsMargins(0,0,0,0)
+        vb_params.setContentsMargins(0, 0, 0, 0)
         vb_params.setSpacing(1)
 
         vb_inputs.base_contents_margins = [4, 4, 4, 4]
@@ -266,7 +295,7 @@ class FunctionGuiElementVtk(GuiElementVtk):
         self.create_inputs(vb_inputs)
         self.create_outputs(vb_outputs)
         hb_content.setSpacing(0)
-        hb_content.setContentsMargins(0,0,0,0)
+        hb_content.setContentsMargins(0, 0, 0, 0)
         hb_content.addLayout(vb_inputs)
         hb_content.addWidget(w_params)
         hb_content.addStretch(1)
@@ -288,40 +317,3 @@ class FunctionGuiElementVtk(GuiElementVtk):
         self.create_break_action()
         self.create_del_action()
         self.create_code_action()
-        #self.setFocusPolicy(QtCore.Qt.ClickFocus + QtCore.Qt.TabFocus)
-        #self.setAttribute(QtCore.Qt.WA_MacShowFocusRect, 1)     # enable showing focus on a Mac
-
-
-class VisualisationElementVtk(FunctionGuiElementVtk, ThreadedElement):
-    def __init__(self):
-        super(VisualisationElementVtk, self).__init__()
-
-    def get_plotter(self, vol, qt_widget):
-        return None
-
-    def get_volume(self, image):
-        return None
-
-    def show_plotter(self, vp, vol):
-        return None
-
-    def visualization(self):
-        self.preview.previews[0].previews[0].open_visualisation_dialog_vtk()
-
-
-def window_vtk(self, winname, **kwargs):
-    print("window vtk")
-    winname = str(winname)
-    with self.lock:
-        if winname not in self.windows:
-            position = kwargs.pop('position', 'auto')
-            if position == 'auto':
-                position = self.positions.get(winname, self.find_best_place())
-            window = self.windows[winname] = PreviewWindowVtk(self, winname, position=position, **kwargs)
-            window.key_signal.connect(self.key_slot)
-            window.move_signal.connect(self.save_positions)
-        return self.windows[winname]
-
-
-setattr(WindowManager, "window_vtk", window_vtk)
-

@@ -1,8 +1,9 @@
-from cvlab.diagram.elements.base import *
 import nibabel as nib
 import pydicom
 import SimpleITK as sitk
 from cvlab.diagram.elements.presentation import *
+
+from cvlab.diagram.elements.base import *
 
 
 class DicomLoaderDirectory(InputElement):
