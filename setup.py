@@ -34,6 +34,11 @@ if sys.version_info.major <= 2:
 
 requirements = [
     "cvlab>=1.3.1",
+    "vtk",
+    "vedo",
+    "pydicom",
+    "SimpleITK",
+    "nibabel"
 ]
 
 
@@ -51,7 +56,7 @@ setup(
     description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',
-    author='Adam Brzeski, Jan Cychnerski',
+    author='Adam Brzeski, Jan Cychnerski, Aleksei Keisel, Jan Groth',
     author_email='adam.m.brzeski@gmail.com, jan.cychnerski@gmail.com',
     url='https://github.com/cvlab-ai/cvlab_medical',
     packages=find_packages(exclude=["temp"]),

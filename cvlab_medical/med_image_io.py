@@ -67,9 +67,9 @@ class DicomSaver(NormalElement):
             sitk.WriteImage(img, path)
 
 
-class NiftiLoader3D(InputElement):
-    name = 'Nifti loader 3D'
-    comment = 'Loads 3D nifti format image\n'
+class NiftiLoader(InputElement):
+    name = 'Nifti loader'
+    comment = 'Loads nifti format image\n'
 
     def get_attributes(self):
         attributes = [], [Output("output")], [PathParameter("path")]
@@ -87,7 +87,7 @@ class NiftiLoader3D(InputElement):
 
 class NiftiSaver(NormalElement):
     name = "Nifti saver"
-    comment = "Saves 3D nifti format image\n"
+    comment = "Saves nifti format image\n"
 
     def get_attributes(self):
         return [Input("input")], [], [SavePathParameter("path", value="", extension_filter="IMG (*.nii)")]
