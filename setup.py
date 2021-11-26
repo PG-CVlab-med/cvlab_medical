@@ -50,6 +50,9 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 description = long_description.splitlines()[0].strip()
 
+pkg=find_packages(exclude=['tmp'])
+pkg.append('cvlab_medical.med_visualisation_utils')
+
 setup(
     name="cvlab_medical",
     version=__version__,
@@ -59,7 +62,7 @@ setup(
     author='Adam Brzeski, Jan Cychnerski, Aleksei Keisel, Jan Groth',
     author_email='adam.m.brzeski@gmail.com, jan.cychnerski@gmail.com',
     url='https://github.com/cvlab-ai/cvlab_medical',
-    packages=find_packages(exclude=["temp"]),
+    packages=pkg,
     package_data=find_package_data(),
     license="AGPL-3.0+",
     python_requires='>=3.3',
