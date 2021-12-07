@@ -35,14 +35,14 @@ if sys.version_info.major <= 2:
 requirements = [
     "cvlab>=1.3.1",
     "vtk",
-    "vedo",
+    "vedo==2021.0.6",
     "pydicom",
     "SimpleITK",
     "nibabel"
 ]
 
 
-__version__ = "1"
+__version__ = "1.2.1"
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
