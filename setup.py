@@ -35,20 +35,23 @@ if sys.version_info.major <= 2:
 requirements = [
     "cvlab>=1.3.1",
     "vtk",
-    "vedo",
+    "vedo==2021.0.6",
     "pydicom",
     "SimpleITK",
     "nibabel"
 ]
 
 
-__version__ = "1"
+__version__ = "1.2.1"
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 description = long_description.splitlines()[0].strip()
+
+pkg=find_packages(exclude=['tmp'])
+pkg.append('cvlab_medical.med_visualisation_utils')
 
 setup(
     name="cvlab_medical",
@@ -59,7 +62,7 @@ setup(
     author='Adam Brzeski, Jan Cychnerski, Aleksei Keisel, Jan Groth',
     author_email='adam.m.brzeski@gmail.com, jan.cychnerski@gmail.com',
     url='https://github.com/cvlab-ai/cvlab_medical',
-    packages=find_packages(exclude=["temp"]),
+    packages=pkg,
     package_data=find_package_data(),
     license="AGPL-3.0+",
     python_requires='>=3.3',
